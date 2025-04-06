@@ -53,6 +53,13 @@ custom_history() {
 
 # 用函数覆盖默认的 history 命令
 alias history='custom_history'
+
+# 确保提示符正确（仅对 root 用户设置 #）
+if [ "$(id -u)" -eq 0 ]; then
+    PS1='[\u@\h \W]\# '
+else
+    PS1='[\u@\h \W]\$ '
+fi
 EOF
 
 # 检查写入是否成功
