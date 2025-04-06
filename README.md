@@ -8,9 +8,13 @@
 
 ## 示例输出
 运行 `history` 后，你将看到类似以下的输出：
-    1  [2025-04-06 15:23:45][root][67.230.164.221] ls
-    2  [2025-04-06 15:23:46][root][67.230.164.221] whoami
-    3  [2025-04-06 15:23:47][root][67.230.164.221] pwd
+    
+    1  [2025-04-06 15:23:45][root][192.168.0.1] ls
+    
+    2  [2025-04-06 15:23:46][root][192.168.0.1] whoami
+    
+    3  [2025-04-06 15:23:47][root][192.168.0.1] pwd
+    
 
 ## 功能
 - **时间戳**：为每条命令添加精确的执行时间（格式：`YYYY-MM-DD HH:MM:SS`）。
@@ -29,10 +33,11 @@
 1. 复制如下命令
    ```bash
    wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc.sh" && chmod +x update_bashrc.sh && ./update_bashrc.sh
-   
+   ```
    自动化：
    ```bash
-   wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc1.sh" && chmod +x update_bashrc1.sh && ./update_bashrc1.sh   
+   wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc1.sh" && chmod +x update_bashrc1.sh && ./update_bashrc1.sh
+   ```  
 2. 赋予脚本执行权限：
    chmod +x update_bashrc.sh
 3. 运行脚本：
