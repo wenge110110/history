@@ -16,9 +16,14 @@ if [ -f "$BASHRC_FILE" ]; then
     fi
 else
     echo "$BASHRC_FILE 不存在，将创建新的文件。"
+    # 创建默认 .bashrc 并加载全局配置
+    echo "# Load system-wide bashrc if it exists" > "$BASHRC_FILE"
+    echo "if [ -f /etc/bashrc ]; then" >> "$BASHRC_FILE"
+    echo "    . /etc/bashrc" >> "$BASHRC_FILE"
+    echo "fi" >> "$BASHRC_FILE"
 fi
 
-# 追加新的配置到 .bashrc，而不是覆盖
+# 追加新的配置到 .bashrc
 echo "追加新的配置到 $BASHRC_FILE"
 cat << 'EOF' >> "$BASHRC_FILE"
 
@@ -48,9 +53,6 @@ custom_history() {
 
 # 用函数覆盖默认的 history 命令
 alias history='custom_history'
-
-# 设置提示符为 [root@localhost ~]#
-PS1='[\u@\h \W]\# '
 EOF
 
 # 检查写入是否成功
