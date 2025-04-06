@@ -80,15 +80,6 @@ history() {
     done < <(builtin history 2>/dev/null)
 }
 
-# 兼容所有发行版的PS1提示符
-case "$(uname -s)" in
-    Linux*)
-        [ "$(id -u)" -eq 0 ] && PS1='[\u@\h \W]# ' || PS1='[\u@\h \W]\$ '
-        ;;
-    *)
-        PS1='[\u@\h \W]\$ '
-        ;;
-esac
 EOF
 
 # =============================================
