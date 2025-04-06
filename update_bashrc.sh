@@ -1,60 +1,102 @@
 #!/bin/bash
 
 # =============================================
-# 安全初始化
+# 安全初始化（兼容所有主流Linux发行版）
 # =============================================
 BASHRC_FILE="$HOME/.bashrc"
 BACKUP_FILE="$HOME/.bashrc_backup_$(date +%Y%m%d_%H%M%S)"
 
-# 轻量级备份
-[ -f "$BASHRC_FILE" ] && cp "$BASHRC_FILE" "$BACKUP_FILE" && echo "备份完成: $BACKUP_FILE"
+# 智能备份（跳过无效文件）
+[ -f "$BASHRC_FILE" ] && {
+    file_size=$(wc -c < "$BASHRC_FILE")
+    [ "$file_size" -lt 1048576 ] && {  # 仅备份小于1MB的文件
+        cp -p "$BASHRC_FILE" "$BACKUP_FILE" && echo "备份完成: $BACKUP_FILE"
+    } || echo "警告: .bashrc文件过大（$((file_size/1024))KB），跳过备份"
+}
 
 # =============================================
-# 完全正确的 history 实现
+# 全发行版兼容的history实现
 # =============================================
 cat << 'EOF' >> "$BASHRC_FILE"
 
-# 启用历史记录时间戳
-export HISTTIMEFORMAT="%Y-%m-%d %T  "
+# 启用高精度历史记录时间戳（兼容Ubuntu/CentOS/Debian）
+export HISTTIMEFORMAT="%F %T  "
 
-# 最终版 history 命令
+# 终极兼容版history命令
 history() {
-    # 使用内置命令获取带时间戳的历史记录
-    local line
-    local count=0
-    local max_lines=50  # 限制输出行数
+    # 获取当前终端类型（防止在非交互式shell中卡死）
+    [[ $- == *i* ]] || { builtin history; return; }
 
-    # 关键修复：正确解析 builtin history 的输出格式
-    while IFS= read -r line && [ $count -lt $max_lines ]; do
-        # 跳过空行和非法行
-        [[ "$line" =~ ^[[:space:]]*[0-9]+[[:space:]]+ ]] || continue
+    # 使用内置history命令获取原始数据（限制50行）
+    local max_lines=50
+    local line cmd_num timestamp cmd
 
-        # 提取命令编号、时间戳和命令内容
-        local cmd_num=$(echo "$line" | awk '{print $1}')
-        local time_part=$(echo "$line" | awk '{print $2 " " $3}')
-        local cmd=$(echo "$line" | sed -E 's/^[ ]*[0-9]+[ ]+[^ ]+ [^ ]+[ ]+//')
+    # 解析三种可能的历史记录格式：
+    # 1. "  NUM  TIMESTAMP  CMD"  (CentOS/HISTTIMEFORMAT)
+    # 2. "#TIMESTAMP\nCMD"        (Ubuntu默认.bash_history)
+    # 3. "  NUM  CMD"             (无时间戳模式)
+    while IFS= read -r line && [ $((max_lines--)) -gt 0 ]; do
+        # 格式1：带编号和时间戳
+        if [[ "$line" =~ ^[[:space:]]*([0-9]+)[[:space:]]+([0-9-]+[[:space:]]+[0-9:]+)[[:space:]]+(.*) ]]; then
+            cmd_num=${BASH_REMATCH[1]}
+            timestamp=${BASH_REMATCH[2]}
+            cmd=${BASH_REMATCH[3]}
+        
+        # 格式2：从.bash_history读取的带#时间戳记录
+        elif [[ "$line" == \#* ]]; then
+            timestamp=${line:1}
+            # 下一行是命令内容
+            IFS= read -r cmd || break
+            cmd_num=$((++cmd_num))
+            
+            # 转换Unix时间戳（Ubuntu默认存储格式）
+            if [[ "$timestamp" =~ ^[0-9]+$ ]]; then
+                timestamp=$(date -d "@$timestamp" "+%F %T" 2>/dev/null || echo "unknown_time")
+            fi
+        
+        # 格式3：无时间戳的简单记录
+        else
+            cmd_num=$(echo "$line" | awk '{print $1}')
+            timestamp="no_timestamp"
+            cmd=$(echo "$line" | sed 's/^[ ]*[0-9]\+[ ]\+//')
+        fi
 
-        # 获取用户和IP（优化版）
-        local user_ip="${SSH_CLIENT:-localhost}"
-        user_ip="${user_ip%% *}"
+        # 获取用户和IP（跨平台兼容方法）
+        local user_ip
+        if [ -n "$SSH_CLIENT" ]; then
+            user_ip=$(awk '{print $1}' <<< "$SSH_CLIENT")
+        elif [ -n "$TMUX" ]; then  # 兼容tmux会话
+            user_ip=$(tmux display-message -p '#{client_hostname}')
+        else
+            user_ip="localhost"
+        fi
 
-        # 格式化输出
+        # 统一格式化输出
         printf "%5d  [%s][%s][%s] %s\n" \
                "$cmd_num" \
-               "$time_part" \
+               "$timestamp" \
                "$USER" \
-               "$user_ip" \
+               "${user_ip}" \
                "$cmd"
-        ((count++))
-    done < <(builtin history | tail -n $((max_lines + 1)) | head -n $max_lines)
+    done < <(builtin history 2>/dev/null | head -n 60)  # 多读10行容错
 }
 
-# 提示符设置（兼容所有发行版）
-PS1='[\u@\h \W]\$ '
+# 兼容所有发行版的PS1提示符
+case "$(uname -s)" in
+    Linux*)
+        [ "$(id -u)" -eq 0 ] && PS1='[\u@\h \W]# ' || PS1='[\u@\h \W]\$ '
+        ;;
+    *)
+        PS1='[\u@\h \W]\$ '
+        ;;
+esac
 EOF
 
 # =============================================
 # 安全激活配置
 # =============================================
-echo -e "\033[32m配置完成！执行以下命令立即生效:\033[0m"
+echo -e "\033[32m配置成功！请执行以下命令立即生效：\033[0m"
 echo "  source ~/.bashrc && history"
+echo -e "\n\033[33m如果仍有问题，请检查：\033[0m"
+echo "1. 手动测试: builtin history | head -n 5"
+echo "2. 查看历史文件: tail -n 5 ~/.bash_history"
