@@ -26,7 +26,8 @@
 - 对 `~/.bashrc` 文件的读写权限
 
 ### 使用方法
-1. 克隆此仓库：
+1. 复制如下命令
+   ```bash
    wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc.sh" && chmod +x update_bashrc.sh && ./update_bashrc.sh
 2. 赋予脚本执行权限：
    chmod +x update_bashrc.sh
