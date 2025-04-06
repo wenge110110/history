@@ -37,12 +37,16 @@
    自动化：
    ```bash
    wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc1.sh" && chmod +x update_bashrc1.sh && ./update_bashrc1.sh
-   ```  
-2. 赋予脚本执行权限：
+   ```
+   还原/恢复：
+   ```bash
+   wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/recover_bashrc.sh" && chmod +x recover_bashrc.sh && ./recover_bashrc.sh
+   ```   
+3. 赋予脚本执行权限：
    chmod +x update_bashrc.sh
-3. 运行脚本：
+4. 运行脚本：
    ./update_bashrc.sh
-4. 测试效果：
+5. 测试效果：
    history
 
 脚本会自动备份当前的 `~/.bashrc` 文件（例如 `~/.bashrc_backup_20250406_152345`），并应用新的配置。
