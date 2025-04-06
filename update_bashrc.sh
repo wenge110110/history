@@ -27,15 +27,14 @@ history() {
     # 获取当前终端类型（防止在非交互式shell中卡死）
     [[ $- == *i* ]] || { builtin history; return; }
 
-    # 使用内置history命令获取原始数据（限制50行）
-    local max_lines=50
+    # 使用内置history命令获取原始数据
     local line cmd_num timestamp cmd
 
     # 解析三种可能的历史记录格式：
     # 1. "  NUM  TIMESTAMP  CMD"  (CentOS/HISTTIMEFORMAT)
     # 2. "#TIMESTAMP\nCMD"        (Ubuntu默认.bash_history)
     # 3. "  NUM  CMD"             (无时间戳模式)
-    while IFS= read -r line && [ $((max_lines--)) -gt 0 ]; do
+    while IFS= read -r line; do
         # 格式1：带编号和时间戳
         if [[ "$line" =~ ^[[:space:]]*([0-9]+)[[:space:]]+([0-9-]+[[:space:]]+[0-9:]+)[[:space:]]+(.*) ]]; then
             cmd_num=${BASH_REMATCH[1]}
@@ -78,7 +77,7 @@ history() {
                "$USER" \
                "${user_ip}" \
                "$cmd"
-    done < <(builtin history 2>/dev/null | head -n 60)  # 多读10行容错
+    done < <(builtin history 2>/dev/null)
 }
 
 # 兼容所有发行版的PS1提示符
