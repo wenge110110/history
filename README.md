@@ -29,6 +29,7 @@
 1. 复制如下命令
    ```bash
    wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc.sh" && chmod +x update_bashrc.sh && ./update_bashrc.sh
+   
    自动化：
    ```bash
    wget -N --no-check-certificate "https://raw.githubusercontent.com/wenge110110/history/master/update_bashrc1.sh" && chmod +x update_bashrc1.sh && ./update_bashrc1.sh   
