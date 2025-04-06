@@ -4,7 +4,7 @@
 BASHRC_FILE="$HOME/.bashrc"
 BACKUP_FILE="$HOME/.bashrc_backup_$(date +%Y%m%d_%H%M%S)"
 
-# 检查 .bashrc 是否存在
+# 检查并备份 .bashrc
 if [ -f "$BASHRC_FILE" ]; then
     echo "备份当前的 $BASHRC_FILE 到 $BACKUP_FILE"
     cp "$BASHRC_FILE" "$BACKUP_FILE"
@@ -18,9 +18,10 @@ else
     echo "$BASHRC_FILE 不存在，将创建新的文件。"
 fi
 
-# 写入新的配置到 .bashrc
-echo "写入新的配置到 $BASHRC_FILE"
-cat << 'EOF' > "$BASHRC_FILE"
+# 追加新的配置到 .bashrc，而不是覆盖
+echo "追加新的配置到 $BASHRC_FILE"
+cat << 'EOF' >> "$BASHRC_FILE"
+
 # 设置历史记录的时间戳格式
 export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
 
@@ -47,13 +48,16 @@ custom_history() {
 
 # 用函数覆盖默认的 history 命令
 alias history='custom_history'
+
+# 设置提示符为 [root@localhost ~]#
+PS1='[\u@\h \W]\# '
 EOF
 
 # 检查写入是否成功
 if [ $? -eq 0 ]; then
-    echo "配置写入成功！"
+    echo "配置追加成功！"
 else
-    echo "配置写入失败，请检查权限！"
+    echo "配置追加失败，请检查权限！"
     exit 1
 fi
 
